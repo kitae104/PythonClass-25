@@ -1,0 +1,649 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>종합예제 2 – 카페 주문 계산기</title>
+  <style>
+    :root {
+      --bg: #f8f9fa;
+      --card: #ffffff;
+      --primary: #8b5cf6;
+      --primary-light: #f5f3ff;
+      --accent: #10b981;
+      --accent-light: #ecfdf5;
+      --warn: #f59e0b;
+      --warn-light: #fffbeb;
+      --danger: #ef4444;
+      --danger-light: #fef2f2;
+      --code-bg: #1e293b;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --muted: #64748b;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', 'Apple SD Gothic Neo', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    header {
+      background: linear-gradient(135deg, #7c3aed 0%, #4c1d95 100%);
+      color: white;
+      padding: 3rem 2rem;
+      text-align: center;
+    }
+    header .badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.2);
+      padding: .3rem 1rem;
+      border-radius: 999px;
+      font-size: .85rem;
+      margin-bottom: 1rem;
+    }
+    header h1 { font-size: 2rem; margin-bottom: .5rem; }
+    header p { opacity: .85; font-size: 1.05rem; }
+
+    .syntax-pills {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: .5rem;
+      margin-top: 1.2rem;
+    }
+    .syntax-pills span {
+      background: rgba(255,255,255,0.25);
+      border: 1px solid rgba(255,255,255,0.4);
+      padding: .25rem .75rem;
+      border-radius: 999px;
+      font-size: .82rem;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    section { margin-bottom: 2.5rem; }
+    section h2 {
+      font-size: 1.25rem;
+      color: var(--primary);
+      border-left: 4px solid var(--primary);
+      padding-left: .75rem;
+      margin-bottom: 1.1rem;
+    }
+    section h3 {
+      font-size: 1rem;
+      color: var(--text);
+      margin: 1.2rem 0 .5rem;
+      font-weight: 600;
+    }
+    section p { color: var(--muted); margin-bottom: .6rem; }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1rem;
+    }
+    .card-icon { font-size: 1.6rem; margin-bottom: .4rem; }
+    .card-title { font-weight: 700; margin-bottom: .3rem; }
+    .card-desc { font-size: .9rem; color: var(--muted); }
+
+    .callout {
+      display: flex;
+      gap: .8rem;
+      align-items: flex-start;
+      padding: 1rem 1.25rem;
+      border-radius: 10px;
+      margin: 1rem 0;
+      font-size: .95rem;
+    }
+    .callout-icon { font-size: 1.3rem; flex-shrink: 0; }
+    .callout.info   { background: var(--primary-light); border-left: 4px solid var(--primary); }
+    .callout.tip    { background: var(--accent-light);  border-left: 4px solid var(--accent); }
+    .callout.warn   { background: var(--warn-light);    border-left: 4px solid var(--warn); }
+    .callout.danger { background: var(--danger-light);  border-left: 4px solid var(--danger); }
+
+    .code-wrap {
+      background: var(--code-bg);
+      border-radius: 10px;
+      overflow: hidden;
+      margin: .8rem 0;
+    }
+    .code-header {
+      background: #0f172a;
+      color: #94a3b8;
+      font-size: .8rem;
+      padding: .5rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+    .code-header .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .code-header .dot.r { background: #ef4444; }
+    .code-header .dot.y { background: #eab308; }
+    .code-header .dot.g { background: #22c55e; }
+    pre {
+      padding: 1.2rem 1.5rem;
+      overflow-x: auto;
+      font-size: .88rem;
+      line-height: 1.8;
+    }
+    code { font-family: 'Consolas', 'D2Coding', monospace; }
+
+    .kw  { color: #93c5fd; }
+    .fn  { color: #86efac; }
+    .st  { color: #fde68a; }
+    .cm  { color: #64748b; font-style: italic; }
+    .nm  { color: #f9a8d4; }
+    .bi  { color: #fca5a5; }
+    .op  { color: #cbd5e1; }
+
+    .flow { display: flex; flex-direction: column; align-items: flex-start; }
+    .flow-item { display: flex; align-items: flex-start; gap: 1rem; }
+    .flow-spine { display: flex; flex-direction: column; align-items: center; width: 32px; flex-shrink: 0; }
+    .flow-circle {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      font-size: .85rem;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .flow-line { width: 2px; background: var(--border); flex: 1; min-height: 20px; }
+    .flow-content {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: .7rem 1rem;
+      margin-bottom: 1rem;
+      flex: 1;
+    }
+    .flow-content strong { display: block; margin-bottom: .2rem; }
+    .flow-content span { font-size: .88rem; color: var(--muted); }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .92rem;
+      margin: .8rem 0;
+    }
+    th {
+      background: var(--primary);
+      color: white;
+      padding: .6rem 1rem;
+      text-align: left;
+    }
+    td { padding: .55rem 1rem; border-bottom: 1px solid var(--border); }
+    tr:last-child td { border-bottom: none; }
+    tr:nth-child(even) td { background: var(--bg); }
+
+    .output {
+      background: #0f172a;
+      color: #a3e635;
+      font-family: 'Consolas', monospace;
+      font-size: .88rem;
+      line-height: 1.9;
+      padding: 1.2rem 1.5rem;
+      border-radius: 10px;
+      border-left: 4px solid #a3e635;
+    }
+
+    .quiz {
+      background: var(--warn-light);
+      border: 1px solid var(--warn);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+    }
+    .quiz h3 { color: #92400e; margin-bottom: .8rem; }
+    .quiz ol { padding-left: 1.2rem; color: var(--text); }
+    .quiz li { margin-bottom: .5rem; }
+
+    .two-col {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+
+    /* 반환값 시각화 */
+    .return-box {
+      background: #0f172a;
+      border-radius: 10px;
+      padding: 1rem 1.5rem;
+      color: #e2e8f0;
+      font-family: 'Consolas', monospace;
+      font-size: .88rem;
+      display: flex;
+      align-items: center;
+      gap: .8rem;
+      flex-wrap: wrap;
+    }
+    .return-arrow {
+      color: #86efac;
+      font-size: 1.2rem;
+    }
+    .return-val {
+      background: #1e3a5f;
+      border: 1px solid #3b82f6;
+      padding: .2rem .7rem;
+      border-radius: 6px;
+      color: #93c5fd;
+    }
+
+    @media (max-width: 600px) {
+      .two-col { grid-template-columns: 1fr; }
+      header h1 { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="badge">종합예제 2</div>
+  <h1>카페 주문 계산기</h1>
+  <p>딕셔너리 조회, 다중 반환값, 함수 호출 체인을 익히는 종합 예제</p>
+  <div class="syntax-pills">
+    <span>list</span>
+    <span>dict</span>
+    <span>for 반복문</span>
+    <span>if / else</span>
+    <span>함수 (def)</span>
+    <span>다중 반환값</span>
+    <span>in 연산자</span>
+    <span>f-string</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- 1. 학습 목표 -->
+  <section>
+    <h2>1. 학습 목표</h2>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">🔍</div>
+        <div class="card-title">딕셔너리 조회</div>
+        <div class="card-desc"><code>in</code> 연산자로 키 존재 여부를 확인하고 값을 가져온다.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">↩️</div>
+        <div class="card-title">다중 반환값</div>
+        <div class="card-desc">함수가 값을 여러 개 돌려주고, 호출 측에서 분리해 받는 방법을 이해한다.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔗</div>
+        <div class="card-title">함수 호출 체인</div>
+        <div class="card-desc">함수의 결과를 다른 함수에 넘겨 단계적으로 처리하는 흐름을 익힌다.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">📝</div>
+        <div class="card-title">예외 데이터 처리</div>
+        <div class="card-desc">메뉴에 없는 항목을 별도 리스트에 모아 사용자에게 알려주는 패턴을 익힌다.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. 전체 구조 -->
+  <section>
+    <h2>2. 전체 프로그램 구조</h2>
+    <p>이 예제는 <strong>데이터 2개</strong>와 <strong>함수 3개</strong>로 이루어져 있습니다.</p>
+
+    <div class="flow">
+      <div class="flow-item">
+        <div class="flow-spine">
+          <div class="flow-circle">D</div>
+          <div class="flow-line"></div>
+        </div>
+        <div class="flow-content">
+          <strong>menu (딕셔너리) &amp; orders (리스트)</strong>
+          <span>메뉴판 가격표와 고객 주문 목록</span>
+        </div>
+      </div>
+      <div class="flow-item">
+        <div class="flow-spine">
+          <div class="flow-circle">1</div>
+          <div class="flow-line"></div>
+        </div>
+        <div class="flow-content">
+          <strong>calculate_total(order_list, price_table)</strong>
+          <span>주문 목록을 순회해 금액 합산 + 미등록 메뉴 수집 → (합계, 미등록목록) 반환</span>
+        </div>
+      </div>
+      <div class="flow-item">
+        <div class="flow-spine">
+          <div class="flow-circle">2</div>
+          <div class="flow-line"></div>
+        </div>
+        <div class="flow-content">
+          <strong>apply_discount(total, order_count)</strong>
+          <span>4개 이상 주문 시 10% 할인 적용 → (최종금액, 메시지) 반환</span>
+        </div>
+      </div>
+      <div class="flow-item">
+        <div class="flow-spine">
+          <div class="flow-circle">3</div>
+          <div class="flow-line" style="display:none"></div>
+        </div>
+        <div class="flow-content">
+          <strong>print_bill(order_list, price_table)</strong>
+          <span>위 두 함수를 호출해 결과를 조합하고 영수증 형태로 출력</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. 데이터 구조 -->
+  <section>
+    <h2>3. 데이터 구조 이해</h2>
+
+    <div class="two-col">
+      <div>
+        <h3>menu – 가격표 (딕셔너리)</h3>
+        <div class="code-wrap">
+          <div class="code-header">
+            <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+            <span>menu</span>
+          </div>
+          <pre><code>menu <span class="op">=</span> {
+    <span class="st">"아메리카노"</span>: <span class="nm">3000</span>,
+    <span class="st">"카페라떼"</span>:  <span class="nm">4000</span>,
+    <span class="st">"쿠키"</span>:      <span class="nm">2000</span>,
+    <span class="st">"샌드위치"</span>:  <span class="nm">5000</span>,
+}</code></pre>
+        </div>
+        <p style="font-size:.88rem">키 = 메뉴 이름, 값 = 가격(원)</p>
+      </div>
+      <div>
+        <h3>orders – 주문 목록 (리스트)</h3>
+        <div class="code-wrap">
+          <div class="code-header">
+            <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+            <span>orders</span>
+          </div>
+          <pre><code>orders <span class="op">=</span> [
+    <span class="st">"아메리카노"</span>,
+    <span class="st">"쿠키"</span>,
+    <span class="st">"카페라떼"</span>,
+    <span class="st">"샌드위치"</span>,
+    <span class="st">"주스"</span>,       <span class="cm"># 메뉴에 없음!</span>
+]</code></pre>
+        </div>
+        <p style="font-size:.88rem">"주스"는 menu에 없으므로 미등록 항목</p>
+      </div>
+    </div>
+
+    <div class="callout info">
+      <span class="callout-icon">💡</span>
+      <div>
+        <strong>딕셔너리 vs 리스트</strong><br/>
+        딕셔너리는 <em>이름으로 찾는</em> 자료구조, 리스트는 <em>순서(인덱스)로 찾는</em> 자료구조입니다.
+        가격표처럼 "이름 → 값" 매핑에는 딕셔너리가, 순서가 있는 목록에는 리스트가 적합합니다.
+      </div>
+    </div>
+  </section>
+
+  <!-- 4. 함수별 설명 -->
+  <section>
+    <h2>4. 함수별 코드 해설</h2>
+
+    <!-- calculate_total -->
+    <h3>① calculate_total – 합계 계산 + 미등록 메뉴 수집</h3>
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+        <span>calculate_total(order_list, price_table)</span>
+      </div>
+      <pre><code><span class="kw">def</span> <span class="fn">calculate_total</span>(order_list, price_table):
+    total <span class="op">=</span> <span class="nm">0</span>
+    unknown_items <span class="op">=</span> []              <span class="cm"># 미등록 메뉴 담을 빈 리스트</span>
+
+    <span class="kw">for</span> item <span class="kw">in</span> order_list:
+        <span class="kw">if</span> item <span class="kw">in</span> price_table:       <span class="cm"># 딕셔너리 키 존재 여부 확인</span>
+            total <span class="op">+=</span> price_table[item]  <span class="cm"># 가격을 더함</span>
+        <span class="kw">else</span>:
+            unknown_items.append(item)  <span class="cm"># 없으면 미등록 목록에 추가</span>
+
+    <span class="kw">return</span> total, unknown_items         <span class="cm"># 두 값을 함께 반환</span></code></pre>
+    </div>
+
+    <div class="callout info">
+      <span class="callout-icon">💡</span>
+      <div>
+        <strong><code>item in price_table</code></strong><br/>
+        딕셔너리에 <code>in</code>을 사용하면 <em>키(key)</em>가 존재하는지 확인합니다.
+        <code>"아메리카노" in menu</code> → <code>True</code>,
+        <code>"주스" in menu</code> → <code>False</code>
+      </div>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">✅</span>
+      <div>
+        <strong>다중 반환값</strong> – <code>return total, unknown_items</code><br/>
+        Python은 쉼표로 구분하면 여러 값을 <strong>튜플</strong>로 묶어 반환합니다.
+        받는 쪽에서 <code>total, unknown_items = calculate_total(...)</code>처럼 <strong>언패킹</strong>해서 사용합니다.
+      </div>
+    </div>
+
+    <h3>② apply_discount – 할인 적용</h3>
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+        <span>apply_discount(total, order_count)</span>
+      </div>
+      <pre><code><span class="kw">def</span> <span class="fn">apply_discount</span>(total, order_count):
+    <span class="cm"># 4개 이상 주문 시 10% 할인</span>
+    <span class="kw">if</span> order_count <span class="op">&gt;=</span> <span class="nm">4</span>:
+        discounted <span class="op">=</span> <span class="bi">int</span>(total <span class="op">*</span> <span class="nm">0.9</span>)    <span class="cm"># 90% = 10% 할인</span>
+        <span class="kw">return</span> discounted, <span class="st">"10% 할인 적용"</span>
+
+    <span class="kw">return</span> total, <span class="st">"할인 없음"</span></code></pre>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">🔍</span>
+      <div>
+        <strong><code>int(total * 0.9)</code></strong><br/>
+        <code>* 0.9</code>는 10% 할인(원가의 90%)을 뜻합니다.
+        곱셈 결과가 소수가 될 수 있으므로 <code>int()</code>로 정수(원 단위)로 내림 처리합니다.
+        예: <code>int(14000 * 0.9)</code> → <code>int(12600.0)</code> → <code>12600</code>
+      </div>
+    </div>
+
+    <table>
+      <thead><tr><th>주문 수</th><th>할인</th><th>반환 메시지</th></tr></thead>
+      <tbody>
+        <tr><td>1 ~ 3개</td><td>없음</td><td>"할인 없음"</td></tr>
+        <tr><td>4개 이상</td><td>10%</td><td>"10% 할인 적용"</td></tr>
+      </tbody>
+    </table>
+
+    <h3>③ print_bill – 최종 영수증 출력</h3>
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+        <span>print_bill(order_list, price_table)</span>
+      </div>
+      <pre><code><span class="kw">def</span> <span class="fn">print_bill</span>(order_list, price_table):
+    <span class="bi">print</span>(<span class="st">"=== 카페 주문 계산기 ==="</span>)
+    <span class="bi">print</span>(<span class="st">"주문 목록:"</span>, order_list)
+
+    <span class="cm"># ① calculate_total 호출 → 두 값 언패킹</span>
+    total, unknown_items <span class="op">=</span> <span class="fn">calculate_total</span>(order_list, price_table)
+
+    <span class="cm"># ② apply_discount 호출 → 두 값 언패킹</span>
+    final_total, message <span class="op">=</span> <span class="fn">apply_discount</span>(total, <span class="bi">len</span>(order_list))
+
+    <span class="bi">print</span>(<span class="st">f"할인 전 금액: {total}원"</span>)
+    <span class="bi">print</span>(<span class="st">f"최종 금액: {final_total}원 ({message})"</span>)
+
+    <span class="kw">if</span> unknown_items:                           <span class="cm"># 리스트가 비어있지 않으면 True</span>
+        <span class="bi">print</span>(<span class="st">"가격표에 없는 메뉴:"</span>, unknown_items)
+    <span class="kw">else</span>:
+        <span class="bi">print</span>(<span class="st">"모든 메뉴가 정상 계산되었습니다."</span>)</code></pre>
+    </div>
+
+    <div class="callout info">
+      <span class="callout-icon">💡</span>
+      <div>
+        <strong><code>if unknown_items:</code></strong><br/>
+        빈 리스트 <code>[]</code>는 Python에서 <code>False</code>로 취급됩니다.
+        즉 미등록 메뉴가 없으면 <code>else</code> 블록이 실행되고, 하나라도 있으면 <code>if</code> 블록이 실행됩니다.
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. 다중 반환값 심화 -->
+  <section>
+    <h2>5. 다중 반환값 & 언패킹 심화</h2>
+    <p>이 예제의 핵심 개념을 별도로 정리합니다.</p>
+
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+        <span>다중 반환값 원리</span>
+      </div>
+      <pre><code><span class="cm"># 반환 시 튜플로 묶임</span>
+<span class="kw">return</span> total, unknown_items
+<span class="cm"># 위는 사실 아래와 같습니다</span>
+<span class="kw">return</span> (total, unknown_items)
+
+<span class="cm"># 받는 쪽에서 언패킹 (튜플을 각 변수에 분리)</span>
+total, unknown_items <span class="op">=</span> <span class="fn">calculate_total</span>(order_list, price_table)
+<span class="cm"># 위는 사실 아래와 같습니다</span>
+result <span class="op">=</span> <span class="fn">calculate_total</span>(order_list, price_table)
+total          <span class="op">=</span> result[<span class="nm">0</span>]
+unknown_items  <span class="op">=</span> result[<span class="nm">1</span>]</code></pre>
+    </div>
+
+    <div class="callout tip">
+      <span class="callout-icon">✅</span>
+      <div>
+        언패킹을 사용하면 반환값을 바로 의미있는 이름의 변수에 담을 수 있어 코드 가독성이 높아집니다.
+        왼쪽 변수 개수와 반환값 개수가 반드시 같아야 합니다.
+      </div>
+    </div>
+  </section>
+
+  <!-- 6. 실행 흐름 -->
+  <section>
+    <h2>6. 실행 흐름 추적</h2>
+    <p>orders 리스트 전체로 추적해 봅시다.</p>
+
+    <div class="card" style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr><th>주문 항목</th><th>menu에 있나?</th><th>처리</th><th>total 변화</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>아메리카노</td><td>✅ 있음</td><td>total += 3000</td><td>3,000원</td></tr>
+          <tr><td>쿠키</td><td>✅ 있음</td><td>total += 2000</td><td>5,000원</td></tr>
+          <tr><td>카페라떼</td><td>✅ 있음</td><td>total += 4000</td><td>9,000원</td></tr>
+          <tr><td>샌드위치</td><td>✅ 있음</td><td>total += 5000</td><td>14,000원</td></tr>
+          <tr><td>주스</td><td>❌ 없음</td><td>unknown_items.append("주스")</td><td>14,000원 (변화 없음)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="card" style="margin-top:.5rem; overflow-x:auto">
+      <table>
+        <thead>
+          <tr><th>단계</th><th>계산</th><th>결과</th></tr>
+        </thead>
+        <tbody>
+          <tr><td>calculate_total 반환</td><td>–</td><td>total=14000, unknown=["주스"]</td></tr>
+          <tr><td>apply_discount 호출</td><td>len(orders)=5 → 5 ≥ 4 → 할인!</td><td>–</td></tr>
+          <tr><td>할인 계산</td><td>int(14000 × 0.9) = int(12600.0)</td><td>12,600원</td></tr>
+          <tr><td>apply_discount 반환</td><td>–</td><td>final_total=12600, message="10% 할인 적용"</td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 7. 실행 결과 -->
+  <section>
+    <h2>7. 실행 결과</h2>
+    <div class="output">
+=== 카페 주문 계산기 ===<br>
+주문 목록: ['아메리카노', '쿠키', '카페라떼', '샌드위치', '주스']<br>
+할인 전 금액: 14000원<br>
+최종 금액: 12600원 (10% 할인 적용)<br>
+가격표에 없는 메뉴: ['주스']
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div>
+        주문이 5개이므로 4개 이상 조건에 해당해 10% 할인이 적용됩니다.
+        "주스"는 menu 딕셔너리에 없으므로 합계에 포함되지 않고 미등록 메뉴로 별도 출력됩니다.
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. 핵심 개념 정리 -->
+  <section>
+    <h2>8. 핵심 개념 정리</h2>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-title">in 연산자 (딕셔너리)</div>
+        <div class="card-desc">
+          <code>key in dict</code> 는 딕셔너리에 해당 키가 있으면 <code>True</code>.<br/>
+          리스트의 <code>in</code>과 같은 문법이지만 딕셔너리는 키만 검색.
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">다중 반환 & 언패킹</div>
+        <div class="card-desc">
+          <code>return a, b</code> → 튜플 반환<br/>
+          <code>x, y = func()</code> → 각 변수에 분리해서 받기
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">append 로 리스트 누적</div>
+        <div class="card-desc">
+          빈 리스트 <code>[]</code>를 만들고 조건에 맞는 항목만 <code>.append()</code>로 추가하는 패턴.
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">if 리스트: 빈 값 체크</div>
+        <div class="card-desc">
+          빈 리스트 <code>[]</code>는 <code>False</code>.<br/>
+          원소가 있으면 <code>True</code> 로 조건 판단 가능.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 9. 확인 문제 -->
+  <section>
+    <h2>9. 확인 문제</h2>
+    <div class="quiz">
+      <h3>🧩 다음 질문에 답해보세요</h3>
+      <ol>
+        <li><code>menu["카페라떼"]</code>의 값은 무엇인가요?</li>
+        <li><code>"초콜릿" in menu</code>의 결과는 <code>True</code>일까요, <code>False</code>일까요?</li>
+        <li>orders가 3개이면 할인이 적용되나요? <code>apply_discount</code>의 조건을 보고 답하세요.</li>
+        <li><code>return total, unknown_items</code>에서 두 값을 받으려면 어떻게 써야 하나요?</li>
+        <li><code>unknown_items</code>가 빈 리스트일 때 <code>if unknown_items:</code>의 결과는 무엇인가요?</li>
+        <li><strong>(도전)</strong> 할인 조건을 "3개 이상 주문 시 5% 할인"으로 바꾸려면 어떻게 수정해야 하나요?</li>
+      </ol>
+    </div>
+  </section>
+
+</main>
+</body>
+</html>

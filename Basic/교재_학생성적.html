@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>종합예제 1 – 학생 성적 리포트</title>
+  <style>
+    :root {
+      --bg: #f8f9fa;
+      --card: #ffffff;
+      --primary: #3b82f6;
+      --primary-light: #eff6ff;
+      --accent: #10b981;
+      --accent-light: #ecfdf5;
+      --warn: #f59e0b;
+      --warn-light: #fffbeb;
+      --code-bg: #1e293b;
+      --code-text: #e2e8f0;
+      --border: #e2e8f0;
+      --text: #1e293b;
+      --muted: #64748b;
+      --highlight: #fef08a;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', 'Apple SD Gothic Neo', sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.7;
+    }
+
+    header {
+      background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%);
+      color: white;
+      padding: 3rem 2rem;
+      text-align: center;
+    }
+    header .badge {
+      display: inline-block;
+      background: rgba(255,255,255,0.2);
+      padding: .3rem 1rem;
+      border-radius: 999px;
+      font-size: .85rem;
+      margin-bottom: 1rem;
+    }
+    header h1 { font-size: 2rem; margin-bottom: .5rem; }
+    header p { opacity: .85; font-size: 1.05rem; }
+
+    .syntax-pills {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: .5rem;
+      margin-top: 1.2rem;
+    }
+    .syntax-pills span {
+      background: rgba(255,255,255,0.25);
+      border: 1px solid rgba(255,255,255,0.4);
+      padding: .25rem .75rem;
+      border-radius: 999px;
+      font-size: .82rem;
+    }
+
+    main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    /* ── section ── */
+    section { margin-bottom: 2.5rem; }
+    section h2 {
+      font-size: 1.25rem;
+      color: var(--primary);
+      border-left: 4px solid var(--primary);
+      padding-left: .75rem;
+      margin-bottom: 1.1rem;
+    }
+    section h3 {
+      font-size: 1rem;
+      color: var(--text);
+      margin: 1.2rem 0 .5rem;
+      font-weight: 600;
+    }
+    section p { color: var(--muted); margin-bottom: .6rem; }
+
+    /* ── cards ── */
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1rem;
+    }
+    .card-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(240px, 1fr));
+      gap: 1rem;
+    }
+    .card-icon {
+      font-size: 1.6rem;
+      margin-bottom: .4rem;
+    }
+    .card-title {
+      font-weight: 700;
+      margin-bottom: .3rem;
+    }
+    .card-desc { font-size: .9rem; color: var(--muted); }
+
+    /* ── callout ── */
+    .callout {
+      display: flex;
+      gap: .8rem;
+      align-items: flex-start;
+      padding: 1rem 1.25rem;
+      border-radius: 10px;
+      margin: 1rem 0;
+      font-size: .95rem;
+    }
+    .callout-icon { font-size: 1.3rem; flex-shrink: 0; }
+    .callout.info  { background: var(--primary-light); border-left: 4px solid var(--primary); }
+    .callout.tip   { background: var(--accent-light);  border-left: 4px solid var(--accent); }
+    .callout.warn  { background: var(--warn-light);    border-left: 4px solid var(--warn); }
+
+    /* ── code block ── */
+    .code-wrap {
+      background: var(--code-bg);
+      border-radius: 10px;
+      overflow: hidden;
+      margin: .8rem 0;
+    }
+    .code-header {
+      background: #0f172a;
+      color: #94a3b8;
+      font-size: .8rem;
+      padding: .5rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+    .code-header .dot { width: 10px; height: 10px; border-radius: 50%; }
+    .code-header .dot.r { background: #ef4444; }
+    .code-header .dot.y { background: #eab308; }
+    .code-header .dot.g { background: #22c55e; }
+    pre {
+      padding: 1.2rem 1.5rem;
+      overflow-x: auto;
+      font-size: .88rem;
+      line-height: 1.8;
+    }
+    code { font-family: 'Consolas', 'D2Coding', monospace; }
+
+    /* token colors */
+    .kw  { color: #93c5fd; }   /* keyword */
+    .fn  { color: #86efac; }   /* function */
+    .st  { color: #fde68a; }   /* string */
+    .cm  { color: #64748b; font-style: italic; }  /* comment */
+    .nm  { color: #f9a8d4; }   /* number */
+    .bi  { color: #fca5a5; }   /* builtin */
+    .op  { color: #cbd5e1; }   /* operator */
+    .hl  { background: rgba(251,191,36,.18); border-radius: 3px; }  /* highlight */
+
+    /* ── flow diagram ── */
+    .flow {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 0;
+      margin: 1rem 0;
+    }
+    .flow-item {
+      display: flex;
+      align-items: flex-start;
+      gap: 1rem;
+    }
+    .flow-spine {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 32px;
+      flex-shrink: 0;
+    }
+    .flow-circle {
+      width: 32px; height: 32px;
+      border-radius: 50%;
+      background: var(--primary);
+      color: white;
+      font-size: .85rem;
+      font-weight: 700;
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .flow-line {
+      width: 2px;
+      background: var(--border);
+      flex: 1;
+      min-height: 20px;
+    }
+    .flow-content {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: .7rem 1rem;
+      margin-bottom: 1rem;
+      flex: 1;
+    }
+    .flow-content strong { display: block; margin-bottom: .2rem; }
+    .flow-content span { font-size: .88rem; color: var(--muted); }
+
+    /* ── table ── */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: .92rem;
+      margin: .8rem 0;
+    }
+    th {
+      background: var(--primary);
+      color: white;
+      padding: .6rem 1rem;
+      text-align: left;
+    }
+    td {
+      padding: .55rem 1rem;
+      border-bottom: 1px solid var(--border);
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:nth-child(even) td { background: var(--bg); }
+
+    /* ── output box ── */
+    .output {
+      background: #0f172a;
+      color: #a3e635;
+      font-family: 'Consolas', monospace;
+      font-size: .88rem;
+      line-height: 1.9;
+      padding: 1.2rem 1.5rem;
+      border-radius: 10px;
+      border-left: 4px solid #a3e635;
+    }
+
+    /* ── quiz ── */
+    .quiz {
+      background: var(--warn-light);
+      border: 1px solid var(--warn);
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+    }
+    .quiz h3 { color: #92400e; margin-bottom: .8rem; }
+    .quiz ol { padding-left: 1.2rem; color: var(--text); }
+    .quiz li { margin-bottom: .5rem; }
+
+    /* ── summary table ── */
+    .summary-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 1rem;
+    }
+    @media (max-width: 600px) {
+      .summary-grid { grid-template-columns: 1fr; }
+      header h1 { font-size: 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="badge">종합예제 1</div>
+  <h1>학생 성적 리포트</h1>
+  <p>리스트 · 딕셔너리 · 반복문 · 선택문 · 함수를 모두 활용하는 종합 예제</p>
+  <div class="syntax-pills">
+    <span>list</span>
+    <span>dict</span>
+    <span>for 반복문</span>
+    <span>if / elif / else</span>
+    <span>함수 (def)</span>
+    <span>f-string</span>
+  </div>
+</header>
+
+<main>
+
+  <!-- 1. 학습 목표 -->
+  <section>
+    <h2>1. 학습 목표</h2>
+    <div class="card-grid">
+      <div class="card">
+        <div class="card-icon">📋</div>
+        <div class="card-title">데이터 구조 활용</div>
+        <div class="card-desc">학생 데이터를 리스트와 딕셔너리로 구성하는 방법을 이해한다.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔁</div>
+        <div class="card-title">반복 처리</div>
+        <div class="card-desc">for 반복문으로 여러 학생을 순서대로 처리하는 패턴을 익힌다.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">🔀</div>
+        <div class="card-title">조건 분기</div>
+        <div class="card-desc">if / elif / else 로 등급·합격 여부를 판단하는 로직을 작성한다.</div>
+      </div>
+      <div class="card">
+        <div class="card-icon">⚙️</div>
+        <div class="card-title">함수 분리</div>
+        <div class="card-desc">기능 단위로 함수를 나눠 코드의 재사용성과 가독성을 높인다.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 2. 전체 구조 -->
+  <section>
+    <h2>2. 전체 프로그램 구조</h2>
+    <p>이 예제는 <strong>3개의 함수</strong>와 <strong>1개의 데이터 변수</strong>로 이루어져 있습니다.</p>
+
+    <div class="flow">
+      <div class="flow-item">
+        <div class="flow-spine">
+          <div class="flow-circle">1</div>
+          <div class="flow-line"></div>
+        </div>
+        <div class="flow-content">
+          <strong>students 데이터</strong>
+          <span>딕셔너리를 담은 리스트 – 이름과 점수 목록 저장</span>
+        </div>
+      </div>
+      <div class="flow-item">
+        <div class="flow-spine">
+          <div class="flow-circle">2</div>
+          <div class="flow-line"></div>
+        </div>
+        <div class="flow-content">
+          <strong>calculate_average(score_list)</strong>
+          <span>점수 목록을 받아 평균을 계산해 반환</span>
+        </div>
+      </div>
+      <div class="flow-item">
+        <div class="flow-spine">
+          <div class="flow-circle">3</div>
+          <div class="flow-line"></div>
+        </div>
+        <div class="flow-content">
+          <strong>make_level(avg)</strong>
+          <span>평균 점수를 받아 등급 문자(A/B/C/D)를 반환</span>
+        </div>
+      </div>
+      <div class="flow-item">
+        <div class="flow-spine">
+          <div class="flow-circle">4</div>
+          <div class="flow-line" style="display:none"></div>
+        </div>
+        <div class="flow-content">
+          <strong>print_report(student_list)</strong>
+          <span>전체 학생을 순회하며 위 두 함수를 호출해 결과 출력</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 3. 데이터 구조 -->
+  <section>
+    <h2>3. 데이터 구조 이해</h2>
+    <p>학생 정보를 저장하는 <code>students</code> 변수를 살펴봅시다.</p>
+
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+        <span>데이터 정의</span>
+      </div>
+      <pre><code><span class="nm">students</span> <span class="op">=</span> [
+    {<span class="st">"name"</span>: <span class="st">"민지"</span>, <span class="st">"scores"</span>: [<span class="nm">88</span>, <span class="nm">92</span>, <span class="nm">81</span>]},
+    {<span class="st">"name"</span>: <span class="st">"준호"</span>, <span class="st">"scores"</span>: [<span class="nm">70</span>, <span class="nm">65</span>, <span class="nm">72</span>]},
+    {<span class="st">"name"</span>: <span class="st">"서연"</span>, <span class="st">"scores"</span>: [<span class="nm">95</span>, <span class="nm">90</span>, <span class="nm">98</span>]},
+]</code></pre>
+    </div>
+
+    <div class="callout info">
+      <span class="callout-icon">💡</span>
+      <div>
+        <strong>중첩 자료구조</strong><br/>
+        바깥쪽 <code>[ ]</code>은 <strong>리스트</strong>(학생 목록), 안쪽 <code>{ }</code>는 <strong>딕셔너리</strong>(한 명의 정보),
+        딕셔너리 안의 <code>"scores"</code> 값도 다시 <strong>리스트</strong>입니다.
+        이렇게 자료구조를 <em>중첩</em>해서 표현하면 복잡한 데이터도 깔끔하게 담을 수 있습니다.
+      </div>
+    </div>
+
+    <h3>접근 방법</h3>
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+        <span>인덱스 &amp; 키 접근</span>
+      </div>
+      <pre><code><span class="cm"># 첫 번째 학생 딕셔너리 전체</span>
+students[<span class="nm">0</span>]            <span class="cm"># {"name": "민지", "scores": [88, 92, 81]}</span>
+
+<span class="cm"># 첫 번째 학생 이름</span>
+students[<span class="nm">0</span>][<span class="st">"name"</span>]    <span class="cm"># "민지"</span>
+
+<span class="cm"># 첫 번째 학생 두 번째 점수</span>
+students[<span class="nm">0</span>][<span class="st">"scores"</span>][<span class="nm">1</span>]  <span class="cm"># 92</span></code></pre>
+    </div>
+  </section>
+
+  <!-- 4. 함수별 설명 -->
+  <section>
+    <h2>4. 함수별 코드 해설</h2>
+
+    <!-- calculate_average -->
+    <h3>① calculate_average – 평균 계산</h3>
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+        <span>calculate_average(score_list)</span>
+      </div>
+      <pre><code><span class="kw">def</span> <span class="fn">calculate_average</span>(score_list):
+    total <span class="op">=</span> <span class="nm">0</span>
+
+    <span class="kw">for</span> score <span class="kw">in</span> score_list:   <span class="cm"># 점수 목록을 하나씩 순회</span>
+        total <span class="op">+=</span> score           <span class="cm"># 누적 합산</span>
+
+    <span class="kw">return</span> total <span class="op">/</span> <span class="bi">len</span>(score_list)  <span class="cm"># 평균 = 합계 ÷ 개수</span></code></pre>
+    </div>
+    <div class="callout tip">
+      <span class="callout-icon">✅</span>
+      <div>
+        <code>len(score_list)</code>는 리스트의 길이(원소 개수)를 반환합니다.
+        점수가 3개이면 <code>len([88, 92, 81]) → 3</code> 이므로 총합을 3으로 나눕니다.
+      </div>
+    </div>
+
+    <!-- make_level -->
+    <h3>② make_level – 등급 판정</h3>
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+        <span>make_level(avg)</span>
+      </div>
+      <pre><code><span class="kw">def</span> <span class="fn">make_level</span>(avg):
+    <span class="kw">if</span> avg <span class="op">&gt;=</span> <span class="nm">90</span>:
+        <span class="kw">return</span> <span class="st">"A"</span>
+    <span class="kw">elif</span> avg <span class="op">&gt;=</span> <span class="nm">80</span>:
+        <span class="kw">return</span> <span class="st">"B"</span>
+    <span class="kw">elif</span> avg <span class="op">&gt;=</span> <span class="nm">70</span>:
+        <span class="kw">return</span> <span class="st">"C"</span>
+    <span class="kw">else</span>:
+        <span class="kw">return</span> <span class="st">"D"</span></code></pre>
+    </div>
+
+    <table>
+      <thead><tr><th>조건</th><th>등급</th><th>예시 평균</th></tr></thead>
+      <tbody>
+        <tr><td>avg ≥ 90</td><td>A</td><td>95.0 → A</td></tr>
+        <tr><td>80 ≤ avg &lt; 90</td><td>B</td><td>87.0 → B</td></tr>
+        <tr><td>70 ≤ avg &lt; 80</td><td>C</td><td>72.3 → C</td></tr>
+        <tr><td>avg &lt; 70</td><td>D</td><td>65.0 → D</td></tr>
+      </tbody>
+    </table>
+
+    <div class="callout info">
+      <span class="callout-icon">💡</span>
+      <div>
+        <code>elif</code>는 앞 조건이 <em>거짓</em>일 때만 검사합니다.
+        즉 avg가 95.0이면 첫 번째 <code>if avg &gt;= 90</code>이 참이므로 나머지 elif/else는 아예 실행되지 않습니다.
+      </div>
+    </div>
+
+    <!-- print_report -->
+    <h3>③ print_report – 전체 리포트 출력</h3>
+    <div class="code-wrap">
+      <div class="code-header">
+        <div class="dot r"></div><div class="dot y"></div><div class="dot g"></div>
+        <span>print_report(student_list)</span>
+      </div>
+      <pre><code><span class="kw">def</span> <span class="fn">print_report</span>(student_list):
+    <span class="bi">print</span>(<span class="st">"=== 학생 성적 리포트 ==="</span>)
+
+    <span class="kw">for</span> student <span class="kw">in</span> student_list:       <span class="cm"># 학생 한 명씩 순회</span>
+        name   <span class="op">=</span> student[<span class="st">"name"</span>]
+        scores <span class="op">=</span> student[<span class="st">"scores"</span>]
+
+        average <span class="op">=</span> <span class="fn">calculate_average</span>(scores)  <span class="cm"># ① 함수 호출</span>
+        level   <span class="op">=</span> <span class="fn">make_level</span>(average)           <span class="cm"># ② 함수 호출</span>
+
+        <span class="kw">if</span> average <span class="op">&gt;=</span> <span class="nm">70</span>:                      <span class="cm"># 합격 여부 판정</span>
+            result <span class="op">=</span> <span class="st">"합격"</span>
+        <span class="kw">else</span>:
+            result <span class="op">=</span> <span class="st">"보충 필요"</span>
+
+        <span class="bi">print</span>(<span class="st">f"이름: {name}"</span>)
+        <span class="bi">print</span>(<span class="st">f"점수 목록: {scores}"</span>)
+        <span class="bi">print</span>(<span class="st">f"평균: {average:.1f}, 등급: {level}, 결과: {result}"</span>)
+        <span class="bi">print</span>(<span class="st">"-"</span>)</code></pre>
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">🔍</span>
+      <div>
+        <strong>f-string 포매팅</strong> – <code>{average:.1f}</code> 에서 <code>:.1f</code>는
+        소수점 첫째 자리까지 표시하라는 형식 지정자입니다.
+        예: <code>87.666... → 87.7</code>
+      </div>
+    </div>
+  </section>
+
+  <!-- 5. 실행 흐름 -->
+  <section>
+    <h2>5. 실행 흐름 추적</h2>
+    <p>민지(점수: 88, 92, 81)를 예로 한 단계씩 따라가 봅시다.</p>
+
+    <div class="card" style="overflow-x:auto">
+      <table>
+        <thead>
+          <tr>
+            <th>단계</th>
+            <th>호출</th>
+            <th>처리 내용</th>
+            <th>결과</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>1</td>
+            <td><code>print_report</code> 시작</td>
+            <td>student = {"name":"민지", "scores":[88,92,81]}</td>
+            <td>–</td>
+          </tr>
+          <tr>
+            <td>2</td>
+            <td><code>calculate_average([88,92,81])</code></td>
+            <td>(88+92+81) ÷ 3 = 261 ÷ 3</td>
+            <td>87.0</td>
+          </tr>
+          <tr>
+            <td>3</td>
+            <td><code>make_level(87.0)</code></td>
+            <td>87.0 &lt; 90 → elif 87.0 ≥ 80 → True</td>
+            <td>"B"</td>
+          </tr>
+          <tr>
+            <td>4</td>
+            <td>합격 여부</td>
+            <td>87.0 ≥ 70 → True</td>
+            <td>"합격"</td>
+          </tr>
+          <tr>
+            <td>5</td>
+            <td>출력</td>
+            <td>f"평균: 87.0, 등급: B, 결과: 합격"</td>
+            <td>화면 출력</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- 6. 실행 결과 -->
+  <section>
+    <h2>6. 실행 결과</h2>
+    <div class="output">
+=== 학생 성적 리포트 ===<br>
+이름: 민지<br>
+점수 목록: [88, 92, 81]<br>
+평균: 87.0, 등급: B, 결과: 합격<br>
+-<br>
+이름: 준호<br>
+점수 목록: [70, 65, 72]<br>
+평균: 69.0, 등급: D, 결과: 보충 필요<br>
+-<br>
+이름: 서연<br>
+점수 목록: [95, 90, 98]<br>
+평균: 94.3, 등급: A, 결과: 합격<br>
+-
+    </div>
+
+    <div class="callout warn">
+      <span class="callout-icon">⚠️</span>
+      <div>
+        준호의 평균은 (70+65+72)÷3 = <strong>69.0</strong>으로 70 미만이기 때문에
+        등급 D, 결과 "보충 필요"가 출력됩니다.
+      </div>
+    </div>
+  </section>
+
+  <!-- 7. 핵심 개념 정리 -->
+  <section>
+    <h2>7. 핵심 개념 정리</h2>
+    <div class="summary-grid">
+      <div class="card">
+        <div class="card-title">리스트 of 딕셔너리</div>
+        <div class="card-desc">
+          여러 레코드를 표처럼 저장할 때 사용.<br>
+          <code>students[i]["key"]</code> 로 접근.
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">for 반복 + 누적 합산</div>
+        <div class="card-desc">
+          <code>total = 0</code> 초기화 후<br>
+          <code>total += score</code> 패턴으로 합계 계산.
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">if / elif / else 체인</div>
+        <div class="card-desc">
+          조건을 위에서부터 순서대로 검사.<br>
+          한 조건이 참이면 나머지는 건너뜀.
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title">함수 반환값 활용</div>
+        <div class="card-desc">
+          <code>return</code> 으로 값을 돌려주고<br>
+          변수에 받아 다음 함수에 전달.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 8. 확인 문제 -->
+  <section>
+    <h2>8. 확인 문제</h2>
+    <div class="quiz">
+      <h3>🧩 다음 질문에 답해보세요</h3>
+      <ol>
+        <li><code>students[1]["scores"][0]</code> 의 값은 무엇인가요?</li>
+        <li>준호의 평균을 직접 손으로 계산해보고, 코드 결과와 일치하는지 확인하세요.</li>
+        <li><code>make_level</code> 함수에서 <code>elif</code> 대신 <code>if</code>를 쓰면 어떤 문제가 생길까요?</li>
+        <li>학생을 한 명 더 추가하려면 <code>students</code> 리스트에 어떻게 써야 하나요?</li>
+        <li><code>f"평균: {average:.1f}"</code> 에서 <code>:.2f</code>로 바꾸면 출력이 어떻게 달라지나요?</li>
+      </ol>
+    </div>
+  </section>
+
+</main>
+</body>
+</html>
